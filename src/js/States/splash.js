@@ -12,7 +12,11 @@ Splash.prototype = {
     },
 
     loadImages: function () {
+        // Backgrounds
+        game.load.image('gamebg', 'content/bg/wholebg.jpg');
 
+        // Sprites
+        game.load.image('kernelspr', 'content/sprites/kernel.png');
     },
 
     loadFonts: function () {
