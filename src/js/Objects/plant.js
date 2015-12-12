@@ -6,7 +6,7 @@ function Plant(seed) {
     this.growthStem = this.root;
 
     this.energy = 100;
-    this.newStemTimer = 4;
+    this.newStemTimer = 15;
 
     this.image = game.add.bitmapData(1600, 2400);
     this.image.addToWorld();
@@ -20,20 +20,18 @@ Plant.prototype.grow = function() {
     //lengthen stem
     this.energy -= this.growthStem.grow();
     if (--this.newStemTimer < 0) {
-        this.newStemTimer = Math.floor(Math.random()*3+2);
+        this.newStemTimer = this.getNextStemLength();
 
-        leaf = this.growthStem.getLeaf();
-        //console.log(leaf);
-        var newStem = new Stem(leaf[0], leaf[1], this.growthStem.growDirection);
+        var spot = this.growthStem.getCoords(this.growthStem.getSpot());
+        var newStem = new Stem(spot[0], spot[1], this.growthStem.growDirection);
         this.growthStem.locked = true;
-        var spot = this.growthStem.getSpot();
         this.growthStem.addStem(newStem, spot, Math.round(Math.random())*2-1);
         this.growthStem = newStem;
     }
 }
 
-Plant.prototype.getNextLeafStem = function() {
-
+Plant.prototype.getNextStemLength = function() {
+    return 15; //TODO
 }
 
 Plant.prototype.render = function(full) {
@@ -44,6 +42,8 @@ Plant.prototype.render = function(full) {
     //draw the growing stems gradually
 
     this.root.drawOn(this.image, full);
+
+    this.growthStem.drawGrowing(this.image);
 }
 
 
@@ -65,12 +65,18 @@ function Stem(x, y, dir) {
 
     this.locked = false;
 
-    this.texture = "trunkspr";
+    this.texture = new Image(game, 0, 0, "trunkspr");
+    this.texture.scale = 0.2;
 
     this.sprite = game.make.sprite(0, 0, "trunkspr");
     this.sprite.anchor.set(0.5);
 
     this.path = [];
+
+    this.growthDrawIndex = {"index" : 0};
+
+    this.currentTween = null;
+    this.tweenTarget = 0;
 }
 
 Stem.prototype.strengthen = function(add) {
@@ -81,8 +87,10 @@ Stem.prototype.strengthen = function(add) {
 Stem.prototype.grow = function() {
     //only for stems that have no children
 
+    var oldPathLength = this.path.length;
+
     var cur = this.getLeaf();
-    var growthLength = Math.floor(Math.random()*40 + 20);
+    var growthLength = Math.floor(Math.random()*30 + 20);
 
     cur[0] += Math.cos(this.growDirection) * growthLength;
     cur[1] -= Math.sin(this.growDirection) * growthLength;
@@ -90,16 +98,28 @@ Stem.prototype.grow = function() {
     this.parts.x.push(cur[0]);
     this.parts.y.push(cur[1]);
 
-    //calculte the points path again
+    //calculate the path again
     this.path = [];
 
-    var x = 1 / 5; //resolution of the interpolation
+    var x = 1 / 50; //resolution of the interpolation
     for (var i = 0; i <= 1; i+= x) { //modify the limit to adjust the length of the stem on screen
         var px = game.math.bezierInterpolation(this.parts.x, i);
         var py = game.math.bezierInterpolation(this.parts.y, i);
 
         this.path.push( { x: px, y: py });
     }
+
+    this.strength -= 0.5;
+
+    // set tweening of the draw index
+
+    if (this.currentTween === null) {
+        console.log("new");
+        this.tweenTarget = this.path.length - 1;
+        this.currentTween = game.add.tween(this.growthDrawIndex).to( { index : 26 }, 1500, Phaser.Easing.Linear.InOut, false);
+        this.currentTween.start();
+    }
+
 
     return 1;
 }
@@ -112,9 +132,26 @@ Stem.prototype.drawOn = function(bmd, fullrender) {
             var y = this.path[i].y;
             var x2 = this.path[i+1].x;
             var y2 = this.path[i+1].y;
-            var line = new Phaser.Line(x, y, x2, y2)
-            bmd.textureLine(line, this.texture, "repeat");
+            //var line = new Phaser.Line(x, y, x2, y2)
+            //bmd.textureLine(line, this.texture, "repeat");
+            //bmd.draw(this.sprite, x, y, this.strength, this.strength);
+            //bmd.circle(x, y, 20, "#00ff00");
         }
+    }
+    //bmd.draw(this.sprite, -100, -100); //without this bmd.circle doesnt work :D
+
+    for (var i = 0; i < this.growthDrawIndex.index; i++) {
+        var x = this.path[i].x;
+        var y = this.path[i].y;
+        var x2 = this.path[i+1].x;
+        var y2 = this.path[i+1].y;
+        bmd.draw(this.sprite, x, y, this.strength, this.strength);
+    }
+
+    for (var i = 0; i < this.parts.x.length; i++) {
+        var x = this.parts.x[i];
+        var y = this.parts.y[i];
+        bmd.circle(x, y, 5, "rgb(255,0,0)");
     }
 
     //recursion to children too
@@ -123,6 +160,10 @@ Stem.prototype.drawOn = function(bmd, fullrender) {
             this.children[key].drawOn(bmd, fullrender);
         }
     }
+}
+
+Stem.prototype.drawGrowing = function() {
+
 }
 
 Stem.prototype.addStem = function(stem, index, side) {
@@ -143,4 +184,8 @@ Stem.prototype.getLeaf = function() {
 Stem.prototype.getSpot = function() {
     var l = this.path.length / parseFloat(3);
     return Math.floor(Math.random()*l + l);
+}
+
+Stem.prototype.getCoords = function(spot) {
+    return [this.path[spot].x, this.path[spot].y];
 }

@@ -49,7 +49,7 @@ Splash.prototype = {
     },
 
     create: function() {
-        this.status.setText("Done!");
+        this.status.setText("Loaded!");
         this.addGameStates();
         this.addGameMusic();
 

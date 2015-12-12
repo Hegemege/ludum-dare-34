@@ -35,7 +35,7 @@ Game.prototype = {
         this.plant = new Plant({"x" : 800, "y" : 1800});
 
         // Set up timed events
-        game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
+        game.time.events.loop(Phaser.Timer.SECOND/2, this.growPlant, this);
 
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
@@ -57,9 +57,9 @@ Game.prototype = {
             game.camera.x += 4;
         }*/
         if (cursors.left.isDown) {
-            this.plant.growthStem.growDirection += 0.005;
+            this.plant.growthStem.growDirection += 0.01;
         } else if (cursors.right.isDown) {
-            this.plant.growthStem.growDirection -= 0.005;
+            this.plant.growthStem.growDirection -= 0.01;
         }
 
     },
