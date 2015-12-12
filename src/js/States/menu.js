@@ -11,6 +11,6 @@ Menu.prototype = {
     }, 
 
     create: function() {
-
+        game.state.start("Game");
     }
 }
