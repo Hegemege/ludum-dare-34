@@ -3,8 +3,10 @@ var Splash = function () {};
 Splash.prototype = {
 
     loadScripts: function () {
-        game.load.script("MenuScript", "js/states/menu.js");
-        game.load.script("GameScript", "js/states/game.js");
+        game.load.script("PlantScript", "js/objects/plant.js");
+        game.load.script("MenuScript", "js/States/menu.js");
+        game.load.script("GameScript", "js/States/game.js");
+        
     },
 
     loadBgm: function () {
@@ -16,7 +18,8 @@ Splash.prototype = {
         game.load.image('gamebg', 'content/bg/wholebg.jpg');
 
         // Sprites
-        game.load.image('kernelspr', 'content/sprites/kernel.png');
+        game.load.image('seedspr', 'content/sprites/seed.png');
+        game.load.image('trunkspr', 'content/sprites/trunk.png');
     },
 
     loadFonts: function () {
@@ -30,7 +33,7 @@ Splash.prototype = {
 
     // Preload game assets
     preload: function () {
-        this.loadScripts();
+        this.loadScripts(); 
         this.loadImages();
         this.loadFonts();
         this.loadBgm();
