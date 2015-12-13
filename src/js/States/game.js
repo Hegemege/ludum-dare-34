@@ -140,14 +140,12 @@ Game.prototype = {
     },
 
     startGrowing: function() {
-        console.log("start growing");
         this.growPlant();
         this.growthTimer = game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
         this.plant.startGrowing();
     },
 
     stopGrowing: function() {
-        console.log("stop growing");
         game.time.events.remove(this.growthTimer);
         this.plant.stopGrowing();
 
@@ -157,7 +155,6 @@ Game.prototype = {
     },
 
     growPlant: function() {
-        console.log("grow plant");
         if (!this.plant.hasNoEnergy()) {
             this.plant.grow(1);
             this.trackGrowth();
@@ -170,7 +167,6 @@ Game.prototype = {
         //find if a stem already exists near current traverse location
         var stem = this.plant.getStemNear(this.traverseTrackCoords);
         if (stem == null) {
-            console.log("new stem");
             //stop traverse
             this.stopTraverse(false);
             //make new stem
@@ -181,7 +177,6 @@ Game.prototype = {
 
         } else {
             //jump to the other stem
-            console.log("jump stem");
             this.plant.startTraverse(stem, 0);
         }
     },
@@ -209,7 +204,6 @@ Game.prototype = {
     },
 
     startGetEnergy: function() {
-        console.log("get energy start");
         this.plant.energy += 5;
         this.trackBase();
 
@@ -217,7 +211,6 @@ Game.prototype = {
     },
 
     stopGetEnergy: function() {
-        console.log("get energy stop");
         this.gameState = 4; //TODO make 3
 
         game.time.events.remove(this.energyTimer);
@@ -226,7 +219,6 @@ Game.prototype = {
     },
 
     startTraverse: function() {
-        console.log("traverse start");
         this.traverse = true;
         this.plant.startTraverse(this.surfaceBaseStem, 0);
 
@@ -234,7 +226,6 @@ Game.prototype = {
     },
 
     stopTraverse: function(strength) {
-        console.log("traverse stop");
         //make the stem thicker and longer
         this.traverse = false;
         if (strength) {
@@ -250,7 +241,6 @@ Game.prototype = {
     },
 
     mainLoop: function() {
-        console.log("main loop start");
         //Pull resources for X time
         if (this.gameState == 2) {
             this.trackSpot(this.surfaceBaseSpot);

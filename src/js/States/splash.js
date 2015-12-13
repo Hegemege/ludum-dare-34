@@ -10,7 +10,7 @@ Splash.prototype = {
     },
 
     loadBgm: function () {
-
+        game.load.audio('bgm', 'content/audio/main.ogg');
     },
 
     loadImages: function () {
@@ -47,7 +47,10 @@ Splash.prototype = {
     },
 
     addGameMusic: function () {
-
+        music = game.add.audio("bgm");
+        music.loop = true;
+        music.play();
+        music.volume = 0.7;
     },
 
     create: function() {
