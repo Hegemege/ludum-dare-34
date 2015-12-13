@@ -18,7 +18,7 @@ function Plant(seed) {
 
     this.blobSprite = game.add.sprite(-100, -100, "blob2spr");
     this.blobSprite.anchor.set(0.5);
-    this.blobSprite.scale.set(0.5);
+    this.blobSprite.scale.set(0.3);
 }
 
 Plant.prototype.strengthen = function() {
@@ -48,10 +48,6 @@ Plant.prototype.newStem = function(oldstem, position, side) {
 
     //oldstem = newStem;
     return newStem;
-}
-
-Plant.prototype.getNextStemLength = function() {
-    return 15; //TODO
 }
 
 Plant.prototype.render = function(full) {
@@ -329,4 +325,35 @@ Stem.prototype.getDirAt = function(spot) {
 
 Stem.prototype.getStrengthAt = function(pos) {
     return this.strengths[pos];
+}
+
+
+
+function Leaf(spritename, x, y) {
+    var mirror = x > 800;
+    var add = mirror ? "rightspr" : "spr";
+    if (spritename == "leaf1") {
+        this.sprite = game.add.sprite(x, y, "leaf1" + add);
+        this.sprite.anchor.x = 0.97;
+        this.sprite.anchor.y = 0.5;
+    } else if (spritename == "leaf2") {
+        this.sprite = game.add.sprite(x, y, "leaf2" + add);
+        this.sprite.anchor.x = 0.97;
+        this.sprite.anchor.y = 0.95;
+    } else if (spritename == "leaf3") {
+        this.sprite = game.add.sprite(x, y, "leaf3" + add);
+        this.sprite.anchor.x = 0.97;
+        this.sprite.anchor.y = 0.36;
+    } else {
+        console.log("bad filename", spritename);
+    }
+
+    
+    this.sprite.scale.set(0.4);
+    
+    if (mirror) {
+        //mirror
+        this.sprite.scale.x *= -1;
+    }
+
 }

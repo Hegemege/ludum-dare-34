@@ -22,6 +22,15 @@ Splash.prototype = {
         game.load.image('trunkspr', 'content/sprites/trunk.png');
         game.load.image('blobspr', 'content/sprites/blob.png');
         game.load.image('blob2spr', 'content/sprites/blob2.png');
+
+        // Leaves
+
+        game.load.image('leaf1spr', 'content/sprites/leaf1.png');
+        game.load.image('leaf2spr', 'content/sprites/leaf2.png');
+        game.load.image('leaf3spr', 'content/sprites/leaf3.png');
+        game.load.image('leaf1rightspr', 'content/sprites/leaf1right.png');
+        game.load.image('leaf2rightspr', 'content/sprites/leaf2right.png');
+        game.load.image('leaf3rightspr', 'content/sprites/leaf3right.png');
     },
 
     loadFonts: function () {

@@ -21,7 +21,6 @@ Game.prototype = {
         this.seed.anchor.x = 0.5;
         this.seed.anchor.y = 0.5;
 
-
         // Resize world
         game.world.resize(1600, 2400);
         game.world.setBounds(0, 0, 1600, 2400);
@@ -39,6 +38,8 @@ Game.prototype = {
         this.groundline.lineTo(1600, this.surfaceHeight);
 
         this.plant = new Plant({"x" : 800, "y" : 1800});
+
+        this.leaves = [];
 
         this.brokeSurface = false;
         this.surfaceBaseStem = null;
@@ -67,6 +68,8 @@ Game.prototype = {
         this.cameraFocusPoint.y = focuspoint[1];
 
         game.camera.follow(this.cameraFocusPoint);
+
+        this.seed.bringToTop();
     },
 
     update: function() {
@@ -152,6 +155,9 @@ Game.prototype = {
         this.mainTimer = this.getNewMainLoop(); //new main loop
 
         this.gameState = 2;
+
+        // add a leaf if the grown stem is thick enough
+        game.time.events.add(Phaser.Timer.SECOND*1.2, this.addLeaf, this);
     },
 
     growPlant: function() {
@@ -179,6 +185,16 @@ Game.prototype = {
             //jump to the other stem
             this.plant.startTraverse(stem, 0);
         }
+    },
+
+    addLeaf: function() {
+        if (Math.random() < 0.6) {
+            var pos = this.plant.growthStem.getLeaf();
+            var dir = this.plant.growthStem.getDirAt(this.plant.growthStem.getLeafSpot());
+            var rlist = ["leaf1", "leaf2", "leaf3"];
+            this.leaves.push(new Leaf( choice(rlist), pos[0], pos[1], dir ));      
+        }
+
     },
 
     trackGrowth: function() {
@@ -253,4 +269,8 @@ Game.prototype = {
         }
         
     }
+}
+
+function choice(list) {
+    return list[Math.floor(Math.random()*list.length)];
 }
