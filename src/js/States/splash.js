@@ -23,6 +23,8 @@ Splash.prototype = {
         game.load.image('blobspr', 'content/sprites/blob.png');
         game.load.image('blob2spr', 'content/sprites/blob2.png');
 
+        game.load.image('waterspr', 'content/sprites/water.png');
+
         // Leaves
 
         game.load.image('leaf1spr', 'content/sprites/leaf1.png');

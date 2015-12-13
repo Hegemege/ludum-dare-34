@@ -59,6 +59,23 @@ Game.prototype = {
         this.waitInputTimer = null;
         this.allowInput = true;
 
+        // gameplay
+
+        this.leafChance = 0;
+        this.leafBaseChance = 0.4;
+
+        this.strengthenAmount = 1;
+        this.strengthenBaseAmount = 1;
+
+        this.waterSprite = game.add.sprite(-500, -500, "waterspr");
+        this.waterSprite.anchor.x = 0.5;
+        this.waterSprite.anchor.x = 0.5;
+        this.waterSprite.scale.set(0.5);
+
+        this.waterBounds = [300, 400, 900, 1000];
+
+        this.waterWait = false;
+
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
 
@@ -110,6 +127,16 @@ Game.prototype = {
                 }
             }
 
+        }
+
+        var tip = this.getTip();
+        var dx = tip[0] - this.waterSprite.x;
+        var dy = tip[1] - this.waterSprite.y;
+        var tipdist = Math.sqrt(dx*dx + dy*dy);
+        if (tipdist < 24 && !this.waterWait) {
+            this.waterWait = true;
+            this.waitInputTimer = game.time.events.add(Phaser.Timer.SECOND/2, function() {this.waterWait = false;}, this);
+            this.relocateWater(true);
         }
 
     },
@@ -188,11 +215,13 @@ Game.prototype = {
     },
 
     addLeaf: function() {
-        if (Math.random() < 0.6) {
+        if (Math.random() < 0.2 + this.leafChance) {
             var pos = this.plant.growthStem.getLeaf();
             var dir = this.plant.growthStem.getDirAt(this.plant.growthStem.getLeafSpot());
             var rlist = ["leaf1", "leaf2", "leaf3"];
-            this.leaves.push(new Leaf( choice(rlist), pos[0], pos[1], dir ));      
+            this.leaves.push(new Leaf( choice(rlist), pos[0], pos[1], dir ));   
+
+            this.leafChance = 0;   
         }
 
     },
@@ -220,7 +249,7 @@ Game.prototype = {
     },
 
     startGetEnergy: function() {
-        this.plant.energy += 5;
+        this.plant.energy += 2.5;
         this.trackBase();
 
         this.energyTimer = game.time.events.add(Phaser.Timer.SECOND, this.stopGetEnergy, this);
@@ -245,7 +274,8 @@ Game.prototype = {
         //make the stem thicker and longer
         this.traverse = false;
         if (strength) {
-            this.plant.strengthenTraversed();
+            this.plant.strengthenTraversed(this.strengthenAmount);
+            this.strengthenAmount = this.strengthenBaseAmount;
         }
         this.plant.stopTraverse();
 
@@ -256,9 +286,44 @@ Game.prototype = {
         //this.gameState = 2;
     },
 
+    relocateWater: function(hit) {
+        if (hit) {
+            this.plant.energy += 3;
+            this.leafChance = this.leafBaseChance;
+
+            this.strengthenAmount += 1;
+        }
+
+
+        var t = this.add.tween(this.waterSprite).to({ alpha: 0 }, 200, Phaser.Easing.Linear.In, true);
+        t.onComplete.add(function() {
+            this.waterSprite.x = Math.random()*this.waterBounds[2] + this.waterBounds[0];
+            this.waterSprite.y = Math.random()*this.waterBounds[2] + this.waterBounds[0];
+
+            this.add.tween(this.waterSprite).to({ alpha: 1 }, 200, Phaser.Easing.Linear.In, true);
+        }, this);
+
+    },
+
+    getTip: function() {
+        if (this.surfaceBaseSpot == null) {
+            return [-1000, -1000];
+        } else {
+            if (this.plant.growing) {
+                var ret = this.plant.growthStem.getLeaf();
+                if (typeof ret !== 'undefined') {
+                    return ret;
+                }
+                
+            }
+        }
+        return [-1000, -1000];
+    },
+
     mainLoop: function() {
         //Pull resources for X time
         if (this.gameState == 2) {
+            this.relocateWater(false);
             this.trackSpot(this.surfaceBaseSpot);
             this.startGetEnergy();
         } else if (this.gameState == 3) {

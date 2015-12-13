@@ -25,8 +25,8 @@ Plant.prototype.strengthen = function() {
     //make stems thicker - spends energy
 }
 
-Plant.prototype.strengthenTraversed = function() {
-    this.traverseStem.strengthen(1);
+Plant.prototype.strengthenTraversed = function(amount) {
+    this.traverseStem.strengthen(amount);
     this.growthStem = this.traverseStem;
     this.render(true);
 }
@@ -41,9 +41,10 @@ Plant.prototype.newStem = function(oldstem, position, side) {
     var spot = position;
     var coords = oldstem.getCoords(spot);
     var newStem = new Stem(coords[0], coords[1], oldstem.getDirAt(spot), oldstem.getStrengthAt(position), true);
-    if (side === null) {
+    
+    /*if (side === null) {
         side = Math.round(Math.random())*2-1;
-    }
+    }*/
     oldstem.addStem(newStem, spot, side);
 
     //oldstem = newStem;
@@ -136,7 +137,8 @@ function Stem(x, y, dir, str, grow) {
     this.parts = { "x" : [x], "y" : [y] };
     this.growDirection = dir;
 
-    this.strength = str; // Basically the width of the stem
+    // Basically the width of the stem, but a max cap
+    this.strength = Math.min(12, str);
     this.thinning = 0.45;
     this.minStrength = 2;
 
@@ -273,7 +275,9 @@ Stem.prototype.addStem = function(stem, index, side) {
     this.children[index] = stem; //add value to the hash table / object
     stem.parent = this;
 
-    stem.growDirection += side * 0.25;
+    if (side !== null) {
+        stem.growDirection += side * 0.25;
+    }   
 }
 
 
@@ -329,9 +333,20 @@ Stem.prototype.getStrengthAt = function(pos) {
 
 
 
-function Leaf(spritename, x, y) {
+function Leaf(spritename, x, y, dir) {
     var mirror = x > 800;
+    
+
+    // if the direction is large enough, add it to that side
+    if (dir - Math.PI/2 > 0.35) {
+        mirror = false;
+    } else if (dir - Math.PI/2 < -0.35) {
+        mirror = true;
+    }
+
     var add = mirror ? "rightspr" : "spr";
+
+
     if (spritename == "leaf1") {
         this.sprite = game.add.sprite(x, y, "leaf1" + add);
         this.sprite.anchor.x = 0.97;
@@ -349,7 +364,11 @@ function Leaf(spritename, x, y) {
     }
 
     
-    this.sprite.scale.set(0.4);
+    var scale = Math.random()*0.15 + 0.20;
+    this.sprite.scale.set(scale);
+
+    this.sprite.alpha = 0;
+    game.add.tween(this.sprite).to( { alpha: 1 }, 300, Phaser.Easing.Linear.None, true);
     
     if (mirror) {
         //mirror
