@@ -40,12 +40,14 @@ Game.prototype = {
         this.surfaceBaseSpot = null;
 
         // Set up timed events
-        game.time.events.add(Phaser.Timer.SECOND, this.startGrowing, this);
+        game.time.events.add(Phaser.Timer.SECOND, this.startCrawling, this);
 
         this.gameState = 1; // 1 crawling to surface
                             // 2 gathering energy
                             // 3 waiting for user input
                             // 4 growing
+
+        this.traverse = false;
 
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
@@ -66,10 +68,21 @@ Game.prototype = {
         } else if (cursors.right.isDown) {
             game.camera.x += 4;
         }*/
-        if (cursors.left.isDown) {
-            this.plant.growthStem.growDirection += 0.01;
-        } else if (cursors.right.isDown) {
-            this.plant.growthStem.growDirection -= 0.01;
+        if (this.plant.growing) {
+            if (cursors.left.isDown) {
+                this.plant.growthStem.growDirection += 0.01;
+            } else if (cursors.right.isDown) {
+                this.plant.growthStem.growDirection -= 0.01;
+            }
+        }
+
+        if (this.traverse) {
+            var output = this.plant.traverse();
+            if (output == -1) {
+                this.stopTraverse();
+            } else {
+
+            }
         }
 
     },
@@ -80,44 +93,102 @@ Game.prototype = {
         this.plant.render(false);
     },
 
-    startGrowing: function() {
+    startCrawling: function() {
         this.crawlTimer = game.time.events.loop(Phaser.Timer.SECOND, this.crawlSurface, this);
     },
 
     crawlSurface: function() {
         this.plant.grow(0); // only one stem
         if (this.plant.getSurfaced(this.surfaceHeight)) {
-            this.surfaceBaseStem = this.plant.growthStem;
-            this.surfaceBaseSpot = this.plant.growthStem.getLeaf();
+
+            var newStem = this.plant.newStem(this.plant.growthStem, this.plant.growthStem.getLeafSpot());
+            this.surfaceBaseStem = newStem;
+            this.surfaceBaseSpot = newStem.getBase();
+
             game.time.events.remove(this.crawlTimer);
             this.plant.stopGrowing();
 
             this.mainTimer = this.getNewMainLoop();
-
+            this.gameState = 2;
         }
         this.trackGrowth();
     },
 
+    startGrowing: function() {
+        this.growthTimer = game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
+    },
+
+    growPlant: function() {
+        if (!this.plant.hasNoEnergy()) {
+            this.plant.grow(1);
+        }
+        if (this.plant.hasNoEnergy()) {
+            this.time.events.remove(this.growthTimer);
+            this.plant.stopGrowing();
+
+            this.mainTimer = this.getNewMainLoop(); //new main loop
+        }
+        this.trackGrowth();
+    },
 
     trackGrowth: function() {
         var newLeaf = this.plant.growthStem.getLeafPart();
         this.add.tween(this.camera).to( {x: newLeaf[0] - this.camera.width/2, y: newLeaf[1] - this.camera.height/2}, 500, Phaser.Easing.Linear.In, true);
     },
 
+    trackSpot: function(spot) {
+        var newSpot = spot;
+        this.add.tween(this.camera).to( {x: newSpot[0] - this.camera.width/2, y: newSpot[1] - this.camera.height/2}, 500, Phaser.Easing.Linear.In, true);
+    },
+
+    trackTraverse: function() {
+        this.trackSpot(this.surfaceBaseSpot);
+    },
+
     getNewMainLoop: function() {
-        return game.time.events.add(Phaser.Timer.SECOND, this.mainLoop, this);
+        return game.time.events.add(Phaser.Timer.SECOND*2, this.mainLoop, this);
+    },
+
+    startGetEnergy: function() {
+        console.log("get energy");
+        this.plant.energy += 5;
+        this.stopGetEnergy();
+    },
+
+    stopGetEnergy: function() {
+        console.log("get energy stop");
+        this.gameState = 4; //TODO make 3
+    },
+
+    startTraverse: function() {
+        console.log("traverse");
+        this.traverse = true;
+        this.plant.startTraverse(this.surfaceBaseStem, 0);
+
+        this.traverseTimer = game.time.events.loop(Phaser.Timer.SECOND, this.trackTraverse, this);
+    },
+
+    stopTraverse: function() {
+        console.log("traverse stop");
+        //make the stem thicker and longer
+        this.traverse = false;
+        this.plant.strengthenTraversed();
+        this.startGrowing();
+
+        game.time.events.remove(this.traverseTimer);
     },
 
     mainLoop: function() {
+        this.trackSpot(this.surfaceBaseSpot); // move camera
         //Pull resources for X time
-        //When done, wait for user input (show instructions)
-        //When input, start growing up/downwards
-        this.resourceDrawTimer = game.time.events.add(Phaser.Timer.SECOND*5, 
-            function() {
-                this.gameState = 3;
-            }
-        , this);
+        if (this.gameState == 2) {
+            this.startGetEnergy();
+        } else if (this.gameState == 3) {
+            //get input
 
-        //call getNewMainLoop upon last timer
+        } else if (this.gameState == 4) {
+            this.startTraverse();
+        }
+        
     }
 }

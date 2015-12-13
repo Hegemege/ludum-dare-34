@@ -20,6 +20,8 @@ Splash.prototype = {
         // Sprites
         game.load.image('seedspr', 'content/sprites/seed.png');
         game.load.image('trunkspr', 'content/sprites/trunk.png');
+        game.load.image('blobspr', 'content/sprites/blob.png');
+        game.load.image('blob2spr', 'content/sprites/blob2.png');
     },
 
     loadFonts: function () {
