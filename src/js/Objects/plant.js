@@ -33,16 +33,19 @@ Plant.prototype.strengthenTraversed = function() {
 
 Plant.prototype.grow = function(cost) {
     //lengthen current growing stem
-    console.log("energy: ", this.energy);
     this.energy -= this.growthStem.grow(cost, this.image);
-    this.growing = true;
 }
 
-Plant.prototype.newStem = function(oldstem, position) {
+Plant.prototype.newStem = function(oldstem, position, side) {
+    side = typeof side !== 'undefined' ? side : null;
     var spot = position;
     var coords = oldstem.getCoords(spot);
     var newStem = new Stem(coords[0], coords[1], oldstem.getDirAt(spot), oldstem.getLastStrength(), true);
-    oldstem.addStem(newStem, spot, Math.round(Math.random())*2-1);
+    if (side === null) {
+        side = Math.round(Math.random())*2-1;
+    }
+    oldstem.addStem(newStem, spot, side);
+
     //oldstem = newStem;
     return newStem;
 }
@@ -64,6 +67,10 @@ Plant.prototype.getSurfaced = function(height) {
         return true;
     }
     return false;
+}
+
+Plant.prototype.startGrowing = function() {
+    this.growing = true;
 }
 
 Plant.prototype.stopGrowing = function() {
@@ -90,11 +97,15 @@ Plant.prototype.traverse = function() {
         this.blobSprite.x = coords[0];
         this.blobSprite.y = coords[1];
     } else {
-        this.blobSprite.x = -100;
-        this.blobSprite.y = -100;
+        this.stopTraverse();
     }
 
     return spot;
+}
+
+Plant.prototype.stopTraverse = function() {
+    this.blobSprite.x = -100;
+    this.blobSprite.y = -100;
 }
 
 Plant.prototype.hasNoEnergy = function() {
@@ -103,6 +114,19 @@ Plant.prototype.hasNoEnergy = function() {
 
 Plant.prototype.getTraverseCoords = function() {
     return this.traverseStem.getCoords(this.traverseSpot);
+}
+
+Plant.prototype.getStemNear = function(spot) {
+    //called during traverse
+    for (var key in this.traverseStem.children) {
+        var travspot = this.traverseStem.getCoords(key);
+        var dx = travspot[0] - spot[0];
+        var dy = travspot[1] - spot[1];
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 30)
+            return this.traverseStem.children[key];
+    }
+    return null;
 }
 
 
@@ -140,12 +164,17 @@ function Stem(x, y, dir, str, grow) {
 
     this.growing = grow;
     this.doneDrawing = false;
+    this.markedForFullDraw = false;
 
     this.traverseIndex = 0;
 }
 
 Stem.prototype.strengthen = function(add) {
     this.strength += add;
+    for (var i = 0; i < this.strengths.length; i++) {
+        this.strengths[i] += add;
+    }
+    this.markedForFullDraw = true;
 }
 
 Stem.prototype.grow = function(cost, bmd) {
@@ -213,7 +242,7 @@ Stem.prototype.drawOn = function(bmd, fullrender) {
             //bmd.circle(x, y, 20, "#00ff00");
         }
     }*/
-    if (fullrender || this.growing) {
+    if (fullrender || this.growing || this.markedForFullDraw) {
         //bmd.draw(this.sprite, -100, -100); //without this bmd.circle doesnt work :D
         for (var i = 0; i < this.growthDrawIndex.index; i++) {
             var x = this.path[i].x;
@@ -229,14 +258,16 @@ Stem.prototype.drawOn = function(bmd, fullrender) {
         bmd.circle(x, y, 5, "rgb(255,0,0)");
     }*/
 
-    if (fullrender) {
+    if (fullrender || this.markedForFullDraw) {
         //recursion to children too
         for (var key in this.children) {
             if (this.children.hasOwnProperty(key)) {
-                this.children[key].drawOn(bmd, fullrender);
+                this.children[key].drawOn(bmd, fullrender || this.markedForFullDraw);
             }
         }
     }
+
+    this.markedForFullDraw = false;
 
 }
 
