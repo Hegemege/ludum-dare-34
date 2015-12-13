@@ -12,6 +12,7 @@ function Plant(seed) {
     this.image.addToWorld();
 
     this.traverseStem = this.root;
+    this.traverseSpot = 0;
 
     this.growing = false;
 
@@ -32,7 +33,8 @@ Plant.prototype.strengthenTraversed = function() {
 
 Plant.prototype.grow = function(cost) {
     //lengthen current growing stem
-    this.energy -= this.growthStem.grow(this.image);
+    console.log("energy: ", this.energy);
+    this.energy -= this.growthStem.grow(cost, this.image);
     this.growing = true;
 }
 
@@ -65,10 +67,13 @@ Plant.prototype.getSurfaced = function(height) {
 }
 
 Plant.prototype.stopGrowing = function() {
-    this.growthStem.currentTween.onComplete.add(function() {
-        this.growing = false;
-        this.growthStem.doneDrawing = true;
-    }, this);
+    this.growing = false;
+    if (this.growthStem.currentTween !== null) {
+        this.growthStem.currentTween.onComplete.add(function() {
+            this.growthStem.doneDrawing = true;
+        }, this);
+    }
+
 }
 
 Plant.prototype.startTraverse = function(stem, index) {
@@ -78,7 +83,8 @@ Plant.prototype.startTraverse = function(stem, index) {
 
 Plant.prototype.traverse = function() {
     //increment traverse index of the traverse stem
-    var spot = this.traverseStem.traverse(this, 1);
+    var spot = this.traverseStem.traverse(this, 0.3);
+    this.traverseSpot = spot;
     if (spot != -1) {
         var coords = this.traverseStem.getCoords(spot);
         this.blobSprite.x = coords[0];
@@ -95,6 +101,9 @@ Plant.prototype.hasNoEnergy = function() {
     return this.energy <= 0;
 }
 
+Plant.prototype.getTraverseCoords = function() {
+    return this.traverseStem.getCoords(this.traverseSpot);
+}
 
 
 
@@ -139,7 +148,7 @@ Stem.prototype.strengthen = function(add) {
     this.strength += add;
 }
 
-Stem.prototype.grow = function(bmd) {
+Stem.prototype.grow = function(cost, bmd) {
     //bmd.clear();
 
     //only for stems that have no children
@@ -187,7 +196,7 @@ Stem.prototype.grow = function(bmd) {
     }
 
 
-    return 1;
+    return cost;
 }
 
 Stem.prototype.drawOn = function(bmd, fullrender) {
@@ -246,7 +255,7 @@ Stem.prototype.traverse = function(plant, amount) {
         return -1; //alerts the game to start growing this stem
     }
 
-    return this.traverseIndex;
+    return Math.floor(this.traverseIndex);
 
 }
 

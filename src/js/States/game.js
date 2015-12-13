@@ -115,20 +115,28 @@ Game.prototype = {
     },
 
     startGrowing: function() {
+        console.log("start growing");
         this.growthTimer = game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
     },
 
+    stopGrowing: function() {
+        console.log("stop growing");
+        game.time.events.remove(this.growthTimer);
+        this.plant.stopGrowing();
+
+        this.mainTimer = this.getNewMainLoop(); //new main loop
+
+        this.gameState = 2;
+    },
+
     growPlant: function() {
+        console.log("grow plant");
         if (!this.plant.hasNoEnergy()) {
             this.plant.grow(1);
+            this.trackGrowth();
+        } else {
+            this.stopGrowing();
         }
-        if (this.plant.hasNoEnergy()) {
-            this.time.events.remove(this.growthTimer);
-            this.plant.stopGrowing();
-
-            this.mainTimer = this.getNewMainLoop(); //new main loop
-        }
-        this.trackGrowth();
     },
 
     trackGrowth: function() {
@@ -142,26 +150,28 @@ Game.prototype = {
     },
 
     trackTraverse: function() {
-        this.trackSpot(this.surfaceBaseSpot);
+        this.trackSpot(this.plant.getTraverseCoords());
     },
 
     getNewMainLoop: function() {
-        return game.time.events.add(Phaser.Timer.SECOND*2, this.mainLoop, this);
+        return game.time.events.add(Phaser.Timer.SECOND*4, this.mainLoop, this);
     },
 
     startGetEnergy: function() {
-        console.log("get energy");
-        this.plant.energy += 5;
+        console.log("get energy start");
+        this.plant.energy += 2;
         this.stopGetEnergy();
     },
 
     stopGetEnergy: function() {
         console.log("get energy stop");
         this.gameState = 4; //TODO make 3
+
+        this.mainTimer = this.getNewMainLoop();
     },
 
     startTraverse: function() {
-        console.log("traverse");
+        console.log("traverse start");
         this.traverse = true;
         this.plant.startTraverse(this.surfaceBaseStem, 0);
 
@@ -176,12 +186,17 @@ Game.prototype = {
         this.startGrowing();
 
         game.time.events.remove(this.traverseTimer);
+
+        //this.mainTimer = this.getNewMainLoop();
+
+        //this.gameState = 2;
     },
 
     mainLoop: function() {
-        this.trackSpot(this.surfaceBaseSpot); // move camera
+        console.log("main loop start");
         //Pull resources for X time
         if (this.gameState == 2) {
+            this.trackSpot(this.surfaceBaseSpot);
             this.startGetEnergy();
         } else if (this.gameState == 3) {
             //get input
