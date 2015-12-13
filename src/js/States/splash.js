@@ -17,6 +17,7 @@ Splash.prototype = {
         // Backgrounds
         game.load.image('gamebg', 'content/bg/wholebg.jpg');
         game.load.image('menubg', 'content/bg/menu.png');
+        game.load.image('tutorialbg', 'content/bg/tutorial.png');
 
         // Sprites
         game.load.image('seedspr', 'content/sprites/seed.png');
