@@ -35,7 +35,7 @@ Game.prototype = {
         this.plant = new Plant({"x" : 800, "y" : 1800});
 
         // Set up timed events
-        game.time.events.loop(Phaser.Timer.SECOND/2, this.growPlant, this);
+        game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
 
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
@@ -65,9 +65,9 @@ Game.prototype = {
     },
 
     render: function() {
-        game.debug.cameraInfo(game.camera, 32, 32);
+        //game.debug.cameraInfo(game.camera, 32, 32);
 
-        this.plant.render(false);
+        this.plant.render(true);
     },
 
 
