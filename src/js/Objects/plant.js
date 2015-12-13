@@ -2,7 +2,7 @@
 function Plant(seed) {
     this.seed = seed;
 
-    this.root = new Stem(seed.x, seed.y, Math.PI/2, 10, true);
+    this.root = new Stem(seed.x, seed.y, Math.PI/2, 13, true);
     this.growthStem = this.root;
 
     this.energy = 3;
@@ -40,7 +40,7 @@ Plant.prototype.newStem = function(oldstem, position, side) {
     side = typeof side !== 'undefined' ? side : null;
     var spot = position;
     var coords = oldstem.getCoords(spot);
-    var newStem = new Stem(coords[0], coords[1], oldstem.getDirAt(spot), oldstem.getLastStrength(), true);
+    var newStem = new Stem(coords[0], coords[1], oldstem.getDirAt(spot), oldstem.getStrengthAt(position), true);
     if (side === null) {
         side = Math.round(Math.random())*2-1;
     }
@@ -141,7 +141,7 @@ function Stem(x, y, dir, str, grow) {
     this.growDirection = dir;
 
     this.strength = str; // Basically the width of the stem
-    this.thinning = 0.35;
+    this.thinning = 0.45;
     this.minStrength = 2;
 
     this.children = { };
@@ -325,6 +325,6 @@ Stem.prototype.getDirAt = function(spot) {
     return this.dirs[spot];
 }
 
-Stem.prototype.getLastStrength = function() {
-    return this.strengths[this.strengths.length - 1];
+Stem.prototype.getStrengthAt = function(pos) {
+    return this.strengths[pos];
 }
