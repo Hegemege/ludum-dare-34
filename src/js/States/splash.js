@@ -3,7 +3,7 @@ var Splash = function () {};
 Splash.prototype = {
 
     loadScripts: function () {
-        game.load.script("PlantScript", "js/objects/plant.js");
+        game.load.script("PlantScript", "js/Objects/plant.js");
         game.load.script("MenuScript", "js/States/menu.js");
         game.load.script("GameScript", "js/States/game.js");
         

@@ -27,15 +27,25 @@ Game.prototype = {
         game.world.setBounds(0, 0, 1600, 2400);
 
         // Set up game variables
+        this.surfaceHeight = 1210;
         this.groundline = game.add.graphics(0,0);
-        this.groundline.lineStyle(4, 0x1C140A, 1);
-        this.groundline.moveTo(0, 1200);
-        this.groundline.lineTo(1600, 1200);
+        this.groundline.lineStyle(4, 0x2E421A, 0.3);
+        this.groundline.moveTo(0, this.surfaceHeight);
+        this.groundline.lineTo(1600, this.surfaceHeight);
 
         this.plant = new Plant({"x" : 800, "y" : 1800});
 
+        this.brokeSurface = false;
+        this.surfaceBaseStem = null;
+        this.surfaceBaseSpot = null;
+
         // Set up timed events
-        game.time.events.loop(Phaser.Timer.SECOND, this.growPlant, this);
+        game.time.events.add(Phaser.Timer.SECOND, this.startGrowing, this);
+
+        this.gameState = 1; // 1 crawling to surface
+                            // 2 gathering energy
+                            // 3 waiting for user input
+                            // 4 growing
 
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
@@ -67,13 +77,47 @@ Game.prototype = {
     render: function() {
         //game.debug.cameraInfo(game.camera, 32, 32);
 
-        this.plant.render(true);
+        this.plant.render(false);
+    },
+
+    startGrowing: function() {
+        this.crawlTimer = game.time.events.loop(Phaser.Timer.SECOND, this.crawlSurface, this);
+    },
+
+    crawlSurface: function() {
+        this.plant.grow(0); // only one stem
+        if (this.plant.getSurfaced(this.surfaceHeight)) {
+            this.surfaceBaseStem = this.plant.growthStem;
+            this.surfaceBaseSpot = this.plant.growthStem.getLeaf();
+            game.time.events.remove(this.crawlTimer);
+            this.plant.stopGrowing();
+
+            this.mainTimer = this.getNewMainLoop();
+
+        }
+        this.trackGrowth();
     },
 
 
-    growPlant: function() {
-        this.plant.grow();
-        var newLeaf = this.plant.growthStem.getLeaf()
+    trackGrowth: function() {
+        var newLeaf = this.plant.growthStem.getLeafPart();
         this.add.tween(this.camera).to( {x: newLeaf[0] - this.camera.width/2, y: newLeaf[1] - this.camera.height/2}, 500, Phaser.Easing.Linear.In, true);
+    },
+
+    getNewMainLoop: function() {
+        return game.time.events.add(Phaser.Timer.SECOND, this.mainLoop, this);
+    },
+
+    mainLoop: function() {
+        //Pull resources for X time
+        //When done, wait for user input (show instructions)
+        //When input, start growing up/downwards
+        this.resourceDrawTimer = game.time.events.add(Phaser.Timer.SECOND*5, 
+            function() {
+                this.gameState = 3;
+            }
+        , this);
+
+        //call getNewMainLoop upon last timer
     }
 }
