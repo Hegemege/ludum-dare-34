@@ -5,6 +5,7 @@ Main.prototype = {
     preload: function() {
         //preload assets of the splash screen here
 
+        game.load.image("loadingspr", "content/bg/loading.png");
         game.load.script('splash',  'js/states/Splash.js');
     },
 

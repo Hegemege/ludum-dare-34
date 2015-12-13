@@ -61,6 +61,8 @@ Game.prototype = {
 
         // gameplay
 
+        this.seed.bringToTop();
+
         this.leafChance = 0;
         this.leafBaseChance = 0.4;
 
@@ -72,9 +74,15 @@ Game.prototype = {
         this.waterSprite.anchor.x = 0.5;
         this.waterSprite.scale.set(0.5);
 
-        this.waterBounds = [300, 400, 900, 1000];
+        this.waterBounds = [350, 750, 600, 350];
 
         this.waterWait = false;
+
+        this.fadein = game.add.sprite(0, 0, "blackspr");
+        this.fadein.scale.set(75);
+        this.fadein.alpha = 0.75;
+
+        this.add.tween(this.fadein).to({ alpha: 0 }, 7000, Phaser.Easing.Linear.In, true);
 
         // DEBUG
         cursors = game.input.keyboard.createCursorKeys();
@@ -86,7 +94,7 @@ Game.prototype = {
 
         game.camera.follow(this.cameraFocusPoint);
 
-        this.seed.bringToTop();
+        
     },
 
     update: function() {
@@ -117,7 +125,7 @@ Game.prototype = {
             } else {
                 this.traverseTrackCoords = this.plant.getTraverseCoords();
             }
-            if (this.allowInput) {
+            if (this.allowInput && output != -1) {
                 if (cursors.left.isDown || cursors.right.isDown) {
                     //see if a stem is near this point: jump to that
                     //else, start new stem
@@ -133,7 +141,7 @@ Game.prototype = {
         var dx = tip[0] - this.waterSprite.x;
         var dy = tip[1] - this.waterSprite.y;
         var tipdist = Math.sqrt(dx*dx + dy*dy);
-        if (tipdist < 24 && !this.waterWait) {
+        if (tipdist < 35 && !this.waterWait) {
             this.waterWait = true;
             this.waitInputTimer = game.time.events.add(Phaser.Timer.SECOND/2, function() {this.waterWait = false;}, this);
             this.relocateWater(true);
@@ -200,6 +208,10 @@ Game.prototype = {
         //find if a stem already exists near current traverse location
         var stem = this.plant.getStemNear(this.traverseTrackCoords);
         if (stem == null) {
+            if (this.plant.traverseStem == null) {
+                return;
+            }
+            console.log(this.plant.traverseStem);
             //stop traverse
             this.stopTraverse(false);
             //make new stem
@@ -298,7 +310,7 @@ Game.prototype = {
         var t = this.add.tween(this.waterSprite).to({ alpha: 0 }, 200, Phaser.Easing.Linear.In, true);
         t.onComplete.add(function() {
             this.waterSprite.x = Math.random()*this.waterBounds[2] + this.waterBounds[0];
-            this.waterSprite.y = Math.random()*this.waterBounds[2] + this.waterBounds[0];
+            this.waterSprite.y = Math.random()*this.waterBounds[3] + this.waterBounds[1];
 
             this.add.tween(this.waterSprite).to({ alpha: 1 }, 200, Phaser.Easing.Linear.In, true);
         }, this);
@@ -310,7 +322,7 @@ Game.prototype = {
             return [-1000, -1000];
         } else {
             if (this.plant.growing) {
-                var ret = this.plant.growthStem.getLeaf();
+                var ret = this.plant.growthStem.getCurrentDrawSpot();
                 if (typeof ret !== 'undefined') {
                     return ret;
                 }

@@ -16,6 +16,7 @@ Splash.prototype = {
     loadImages: function () {
         // Backgrounds
         game.load.image('gamebg', 'content/bg/wholebg.jpg');
+        game.load.image('menubg', 'content/bg/menu.png');
 
         // Sprites
         game.load.image('seedspr', 'content/sprites/seed.png');
@@ -24,6 +25,7 @@ Splash.prototype = {
         game.load.image('blob2spr', 'content/sprites/blob2.png');
 
         game.load.image('waterspr', 'content/sprites/water.png');
+        game.load.image('blackspr', 'content/sprites/black.png');
 
         // Leaves
 
@@ -40,8 +42,7 @@ Splash.prototype = {
     },
 
     init: function () {
-        this.status = game.add.text(game.world.centerX, game.world.centerY, "Loading...", {fill: "white"});
-        this.status.anchor.set(0.5);
+        this.sprite = game.add.sprite(0, 0, "loadingspr");
     },
 
     // Preload game assets
@@ -65,7 +66,7 @@ Splash.prototype = {
     },
 
     create: function() {
-        this.status.setText("Loaded!");
+
         this.addGameStates();
         this.addGameMusic();
 

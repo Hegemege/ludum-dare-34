@@ -11,7 +11,7 @@ function Plant(seed) {
     this.image = game.add.bitmapData(1600, 2400);
     this.image.addToWorld();
 
-    this.traverseStem = this.root;
+    this.traverseStem = null;
     this.traverseSpot = 0;
 
     this.growing = false;
@@ -87,6 +87,9 @@ Plant.prototype.startTraverse = function(stem, index) {
 
 Plant.prototype.traverse = function() {
     //increment traverse index of the traverse stem
+    if (this.traverseStem == null) {
+        return -1;
+    }
     var spot = this.traverseStem.traverse(this, 0.3);
     this.traverseSpot = spot;
     if (spot != -1) {
@@ -115,6 +118,9 @@ Plant.prototype.getTraverseCoords = function() {
 
 Plant.prototype.getStemNear = function(spot) {
     //called during traverse
+    if (this.traverseStem == null) {
+        return null;
+    }
     for (var key in this.traverseStem.children) {
         var travspot = this.traverseStem.getCoords(key);
         var dx = travspot[0] - spot[0];
@@ -315,11 +321,22 @@ Stem.prototype.getRandomSpot = function() {
     return Math.floor(Math.random()*l + l);
 }
 
+Stem.prototype.getCurrentDrawSpot = function() {
+    var i = this.growthDrawIndex.index;
+    if (typeof this.path[i] === "undefined") {
+        return [-1000, -1000];
+    }
+    return [this.path[i].x, this.path[i].y];
+}
+
 Stem.prototype.getLeafSpot = function() {
     return this.path.length - 1;
 }
 
 Stem.prototype.getCoords = function(spot) {
+    if (typeof this.path[spot] === "undefined") {
+        return this.parts[0];
+    }
     return [this.path[spot].x, this.path[spot].y];
 }
 
