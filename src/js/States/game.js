@@ -26,6 +26,11 @@ Game.prototype = {
         game.world.resize(1600, 2400);
         game.world.setBounds(0, 0, 1600, 2400);
 
+        game.camera.deadzone = new Phaser.Rectangle(100, 100, 600, 400);
+
+        this.cameraFocusPoint = game.add.sprite(0, 0, "blobspr");
+        this.cameraFocusPoint.visible = false;
+
         // Set up game variables
         this.surfaceHeight = 1210;
         this.groundline = game.add.graphics(0,0);
@@ -57,7 +62,11 @@ Game.prototype = {
         cursors = game.input.keyboard.createCursorKeys();
 
         var focuspoint = this.plant.growthStem.getBase();
-        game.camera.focusOnXY(focuspoint[0], focuspoint[1]);
+
+        this.cameraFocusPoint.x = focuspoint[0];
+        this.cameraFocusPoint.y = focuspoint[1];
+
+        game.camera.follow(this.cameraFocusPoint);
     },
 
     update: function() {
@@ -110,7 +119,7 @@ Game.prototype = {
 
     startCrawling: function() {
         this.plant.growing = true;
-        this.crawlTimer = game.time.events.loop(Phaser.Timer.SECOND, this.crawlSurface, this);
+        this.crawlTimer = game.time.events.loop(Phaser.Timer.SECOND/2, this.crawlSurface, this);
     },
 
     crawlSurface: function() {
@@ -179,12 +188,12 @@ Game.prototype = {
 
     trackGrowth: function() {
         var newLeaf = this.plant.growthStem.getLeafPart();
-        this.add.tween(this.camera).to( {x: newLeaf[0] - this.camera.width/2, y: newLeaf[1] - this.camera.height/2}, 500, Phaser.Easing.Linear.In, true);
+        this.add.tween(this.cameraFocusPoint).to( {x: newLeaf[0], y: newLeaf[1]}, 500, Phaser.Easing.Linear.In, true);
     },
 
     trackSpot: function(spot) {
         var newSpot = spot;
-        this.add.tween(this.camera).to( {x: newSpot[0] - this.camera.width/2, y: newSpot[1] - this.camera.height/2}, 500, Phaser.Easing.Linear.In, true);
+        this.add.tween(this.cameraFocusPoint).to( {x: newSpot[0], y: newSpot[1]}, 500, Phaser.Easing.Linear.In, true);
     },
 
     trackBase: function() {
@@ -196,7 +205,7 @@ Game.prototype = {
     },
 
     getNewMainLoop: function() {
-        return game.time.events.add(Phaser.Timer.SECOND*4, this.mainLoop, this);
+        return game.time.events.add(Phaser.Timer.SECOND*2, this.mainLoop, this);
     },
 
     startGetEnergy: function() {
@@ -204,7 +213,7 @@ Game.prototype = {
         this.plant.energy += 5;
         this.trackBase();
 
-        this.energyTimer = game.time.events.add(Phaser.Timer.SECOND*2, this.stopGetEnergy, this);
+        this.energyTimer = game.time.events.add(Phaser.Timer.SECOND, this.stopGetEnergy, this);
     },
 
     stopGetEnergy: function() {

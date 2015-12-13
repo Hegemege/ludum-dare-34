@@ -182,6 +182,8 @@ Stem.prototype.grow = function(cost, bmd) {
 
     //only for stems that have no children
 
+    this.growing = true;
+
     var cur = this.getLeaf();
     var growthLength = 40;//Math.floor(Math.random()*30 + 20);
 
@@ -216,7 +218,7 @@ Stem.prototype.grow = function(cost, bmd) {
 
     // set tweening of the draw index
     this.tweenTarget = this.path.length;
-    var newTween = game.add.tween(this.growthDrawIndex).to( { index : this.tweenTarget }, 1000, Phaser.Easing.Linear.InOut, false);
+    var newTween = game.add.tween(this.growthDrawIndex).to( { index : this.tweenTarget }, 900, Phaser.Easing.Linear.InOut, false);
     if (this.currentTween === null || !this.currentTween.isRunning) {
         this.currentTween = newTween;
         this.currentTween.start();
